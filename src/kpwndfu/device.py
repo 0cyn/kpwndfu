@@ -1,6 +1,6 @@
 import checkm8.usbexec as usbexec
 from checkm8.checkm8 import exploit
-from checkm8.pwned import DFUDevice
+from checkm8.device import DFUDevice
 import struct
 
 class Device:
