@@ -1,6 +1,6 @@
 from setuptools import setup
 
-setup(name='checkm8',
+setup(name='kpwndfu',
       version='1.0.0',
       description='python3 module implementation of axi0mx\'s checkm8 exploit',
       author='kritanta',
