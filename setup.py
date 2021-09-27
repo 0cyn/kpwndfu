@@ -6,10 +6,11 @@ setup(name='checkm8',
       author='kritanta',
       url='https://github.com/kritantadev/checkm8',
       install_requires=['pyusb @ git+git://github.com/kritantadev/pyusb.git'],
-      packages=['checkm8', 'libusbfinder'],
+      packages=['checkm8', 'libusbfinder', 'kpwndfu'],
       package_dir={
           'checkm8': 'src/checkm8',
           'libusbfinder': 'src/libusbfinder',
+          'kpwndfu': 'src/kpwndfu'
       },
       package_data={
           'checkm8': ['devices/*', 'bin/*'],
