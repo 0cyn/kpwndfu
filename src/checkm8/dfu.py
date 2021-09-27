@@ -43,7 +43,7 @@ def usb_reset(device):
     print('Performing USB port reset.')
     try:
         device.reset()
-    except core.USBError:
+    except Exception as ex:
         # OK: doesn't happen on Yosemite but happens on El Capitan and Sierra
         print('Caught exception during port reset; should still work.')
         pass
