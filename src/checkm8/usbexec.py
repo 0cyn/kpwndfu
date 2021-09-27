@@ -168,6 +168,8 @@ class PwnedUSBDevice():
         for i in range(len(args)):
             if isinstance(args[i], int):
                 cmd += struct.pack('<%s' % self.cmd_arg_type(), args[i])
+            elif isinstance(args[i], bytes) and i == len(args) - 1:
+                cmd += args[i]
             elif isinstance(args[i], str) and i == len(args) - 1:
                 cmd += args[i]
             else:
