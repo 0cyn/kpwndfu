@@ -1,6 +1,9 @@
 import binascii, datetime, hashlib, struct, sys, time
 import usb # pyusb: use 'pip install pyusb' to install this module
-import dfu, recovery, image3, image3_24Kpwn, utilities
+import checkm8.dfu as dfu
+import checkm8.utilities as utilities
+
+# kat: i think this is just old exploits and we can remove it?
 
 EXEC_MAGIC = 'exec'[::-1]
 AES_BLOCK_SIZE = 16
@@ -179,113 +182,6 @@ class PwnedDFUDevice():
     def write_memory(self, address, data):
         (retval, data) = self.execute(struct.pack('<4I%ss' % len(data), self.config.memmove, address, self.config.load_address + 20, len(data), data), 0)
         return data
-
-    def nor_dump(self, saveBackup):
-        (bdev, empty) = self.execute(struct.pack('<2I5s', self.config.get_block_device, self.config.load_address + 12, 'nor0\x00'), 0)
-        if bdev == 0:
-            print('ERROR: Unable to dump NOR. Pointer to nor0 block device was NULL.')
-            sys.exit(1)
-
-        data = self.read_memory(bdev + 28, 4)
-        (read,) = struct.unpack('<I', data)
-        if read == 0:
-            print('ERROR: Unable to dump NOR. Function pointer for reading was NULL.')
-            sys.exit(1)
-
-        NOR_PART_SIZE = 0x20000
-        NOR_PARTS = 8
-        nor = str()
-        for i in range(NOR_PARTS):
-            print('Dumping NOR, part %s/%s.' % (i+1, NOR_PARTS))
-            (retval, received) = self.execute(struct.pack('<6I', read, bdev, self.config.load_address + 8, i * NOR_PART_SIZE, 0, NOR_PART_SIZE), NOR_PART_SIZE)
-            nor += received
-
-        if saveBackup:
-            date = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-            filename = 'nor-backups/nor-%s-%s.dump' % (self.ecid_string(), date)
-            f = open(filename, 'wb')
-            f.write(nor)
-            f.close()
-            print('NOR backed up to file: %s' % filename)
-
-        return nor
-
-    def boot_ibss(self):
-        print('Sending iBSS.')
-        if self.config.cpid != '8920':
-            print('ERROR: Boot iBSS is currently only supported on iPhone 3GS.')
-            sys.exit(1)
-
-        help1 = 'Download iPhone2,1_4.3.5_8L1_Restore.ipsw and use the following command to extract iBSS:'
-        help2 = 'unzip -p iPhone2,1_4.3.5_8L1_Restore.ipsw Firmware/dfu/iBSS.n88ap.RELEASE.dfu > n88ap-iBSS-4.3.5.img3'
-        try:
-            f = open('n88ap-iBSS-4.3.5.img3', 'rb')
-            data = f.read()
-            f.close()
-        except:
-            print('ERROR: n88ap-iBSS-4.3.5.img3 is missing.')
-            print(help1)
-            print(help2)
-            sys.exit(1)
-        if len(data) == 0:
-            print('ERROR: n88ap-iBSS-4.3.5.img3 exists, but is empty (size: 0 bytes).')
-            print(help1)
-            print(help2)
-            sys.exit(1)
-        if hashlib.sha256(data).hexdigest() != 'b47816105ce97ef02637ec113acdefcdee32336a11e04eda0a6f4fc5e6617e61':
-            print('ERROR: n88ap-iBSS-4.3.5.img3 exists, but is from the wrong IPSW or corrupted.')
-            print(help1)
-            print(help2)
-            sys.exit(1)
-
-        iBSS = image3.Image3(data)
-        decryptediBSS = iBSS.newImage3(decrypted=True)
-        n88ap_iBSS_435_patches = [
-            (0x14954,                     'run\x00'), # patch 'reset' command string to 'run'
-            (0x17654, struct.pack('<I', 0x41000001)), # patch 'reset' command handler to LOAD_ADDRESS + 1
-        ]
-        patchediBSS = decryptediBSS[:64] + utilities.apply_patches(decryptediBSS[64:], n88ap_iBSS_435_patches)
-
-        device = dfu.acquire_device()
-        assert self.identifier == device.serial_number
-        dfu.reset_counters(device)
-        dfu.request_image_validation(device)
-        dfu.release_device(device)
-
-        time.sleep(0.5)
-
-        device = dfu.acquire_device()
-        assert self.identifier == device.serial_number
-        data = dfu.send_data(device, patchediBSS)
-        dfu.request_image_validation(device)
-        dfu.release_device(device)
-
-        time.sleep(0.5)
-
-        print('Waiting for iBSS to enter Recovery Mode.')
-        device = recovery.acquire_device()
-        recovery.release_device(device)
-
-    def flash_nor(self, nor):
-        self.boot_ibss()
-        print('Sending iBSS payload to flash NOR.')
-        MAX_SHELLCODE_LENGTH = 128
-        payload = open('bin/ibss-flash-nor-shellcode.bin', 'rb').read()
-        assert len(payload) <= MAX_SHELLCODE_LENGTH
-        payload += '\x00' * (MAX_SHELLCODE_LENGTH - len(payload)) + nor
-
-        device = recovery.acquire_device()
-        assert 'CPID:8920' in device.serial_number
-        recovery.send_data(device, payload)
-        try:
-            print('Sending run command.')
-            recovery.send_command(device, 'run')
-        except usb.core.USBError:
-            # OK
-            pass
-            #print 'Caught USBError; should still work.'
-        recovery.release_device(device)
-        print('If screen is not red, NOR was flashed successfully and device will reboot.')
 
     def decrypt_keybag(self, keybag):
         KEYBAG_LENGTH = 48

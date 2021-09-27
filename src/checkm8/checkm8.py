@@ -6,8 +6,8 @@ import time
 
 import usb
 
-import dfu
-from shellcode import get_shellcode_file_path
+import checkm8.dfu as dfu
+from .shellcode import get_shellcode_file_path
 
 
 

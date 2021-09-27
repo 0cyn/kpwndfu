@@ -1,5 +1,6 @@
 import struct, sys
-import dfu, device_platform
+import checkm8.dfu as dfu
+import checkm8.device_platform as device_platform
 
 
 class ExecConfig:
