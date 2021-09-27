@@ -61,7 +61,7 @@ def libusb1_no_error_ctrl_transfer(device, bmRequestType, bRequest, wValue, wInd
         ret = device.ctrl_transfer(bmRequestType, bRequest, wValue, wIndex, data_or_wLength, timeout)
         print("ctrl transfer good: %d %d" % (bmRequestType, bRequest))
         # print("ctrl transfer", ret)
-    except usb.core.USBError as e:
+    except Exception as e:
         # traceback.print_exc()
         print("ctrl transfer ERROR: %d %d %r" % (bmRequestType, bRequest, e))
         pass
