@@ -1,12 +1,7 @@
-import array
-import ctypes
 import struct
 import sys
 import time
 
-import usb
-
-import checkm8.dfu as dfu
 from checkm8.device import DFUDevice
 from .shellcode import get_shellcode_file_path
 

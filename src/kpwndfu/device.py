@@ -1,13 +1,22 @@
-import checkm8.dfu as dfu
 import checkm8.usbexec as usbexec
+from checkm8.checkm8 import exploit
+from checkm8.device import DFUDevice
 
 
-def demote():
-    device = dfu.acquire_device()
-    serial_number = device.serial_number
-    dfu.release_device(device)
+class Device:
+    def __init__(self):
+        self.serial = None
+        self.pwned = False
+        self.update_serial()
 
-    if 'PWND:[checkm8]' in serial_number:
+    def update_serial(self):
+        dfu_device = DFUDevice()
+        self.serial = dfu_device.device.serial_number
+        self.pwned = 'PWND:[checkm8]' in self.serial
+        dfu_device.release()
+
+    def demote(self):
+        self.do_exploit_if_needed()
         pwned = usbexec.PwnedUSBDevice()
         old_value = pwned.read_memory_uint32(pwned.platform.demotion_reg)
         print(f'Demotion Register: 0x{hex(old_value)}')
@@ -22,5 +31,19 @@ def demote():
                 print(f'Failed to demote device')
         else:
             print(f'Device is already demoted!')
-    else:
-        print('dfu is not pwn')
+
+    def do_exploit_if_needed(self):
+        if self.pwned:
+            return
+        self.attempt_exploit()
+
+    def attempt_exploit(self, attempts=10):
+        for attempt in range(0, attempts+1):
+            if not self.pwned:
+                exploit()
+                self.update_serial()
+                if self.pwned:
+                    break
+            if attempt == 10:
+                print("Exploit failed after 10 attempts.")
+                raise AssertionError("Exploit Failed after 10 attempts")
