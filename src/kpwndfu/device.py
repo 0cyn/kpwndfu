@@ -18,7 +18,7 @@ class Device:
     def decrypt_gid(self, keybag):
         self.do_exploit_if_needed()
         pwned = usbexec.PwnedUSBDevice()
-        return pwned.aes(keybag.decode('hex'), usbexec.AES_DECRYPT, usbexec.AES_GID_KEY).encode('hex')
+        return pwned.aes(bytes.fromhex(keybag), usbexec.AES_DECRYPT, usbexec.AES_GID_KEY).hex()
 
     def demote(self):
         self.do_exploit_if_needed()
