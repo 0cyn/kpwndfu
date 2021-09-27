@@ -54,7 +54,7 @@ class Device:
         #pwned.write_memory(TRAMPOLINE + 0x400, open('bin/t8015_shellcode_arm64.bin').read())
 
         pwned.write_memory_ptr(BOOTSTRAP_TASK_LR, NAND_BOOT_JUMP)
-        pwned.write_memory(DFU_BOOL, '\x01')
+        pwned.write_memory(DFU_BOOL, b'\x01')
         pwned.execute(0, DFU_NOTIFY, DFU_STATE)
         print('booted')
 
