@@ -1,6 +1,7 @@
 import hashlib, os, platform, tarfile
 import sys
-from io import StringIO
+from io import StringIO, BytesIO
+
 
 class VersionConfig:
     def __init__(self, version, bottle, bottle_sha256, dylib_patches, dylib_sha256):
@@ -94,7 +95,7 @@ def libusb1_path_internal():
                 print('ERROR: SHA256 hash of bottle does not match.')
                 sys.exit(1)
 
-            tar = tarfile.open(fileobj=StringIO(bottle))
+            tar = tarfile.open(fileobj=BytesIO(bottle))
             for member in tar.getmembers():
                 if member.name.endswith(DYLIB_NAME):
                     patched_dylib = apply_patches(tar.extractfile(member.name).read(), config.dylib_patches)
