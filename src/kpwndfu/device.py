@@ -15,22 +15,24 @@ class Device:
         self.pwned = 'PWND:[checkm8]' in self.serial
         dfu_device.release()
 
+    def decrypt_gid(self, keybag):
+        self.do_exploit_if_needed()
+        pwned = usbexec.PwnedUSBDevice()
+        return pwned.aes(keybag.decode('hex'), usbexec.AES_DECRYPT, usbexec.AES_GID_KEY).encode('hex')
+
     def demote(self):
         self.do_exploit_if_needed()
         pwned = usbexec.PwnedUSBDevice()
         old_value = pwned.read_memory_uint32(pwned.platform.demotion_reg)
-        print(f'Demotion Register: 0x{hex(old_value)}')
         if old_value & 1:
-            print('Attempting demotion')
             pwned.write_memory_uint32(pwned.platform.demotion_reg, old_value & 0xFFFFFFFE)
             new_value = pwned.read_memory_uint32(pwned.platform.demotion_reg)
-            print(f'Demotion Register: 0x{hex(new_value)}')
             if old_value != new_value:
-                print(f'Success')
+                return True
             else:
-                print(f'Failed to demote device')
+                return False
         else:
-            print(f'Device is already demoted!')
+            return True
 
     def do_exploit_if_needed(self):
         if self.pwned:

