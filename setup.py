@@ -16,5 +16,5 @@ setup(name='kpwndfu',
           'checkm8': ['devices/*', 'bin/*'],
           'libusbfinder': ['bottles/*']
       },
-      scripts=['bin/checkm8']
+      scripts=['bin/kpwndfu']
       )
