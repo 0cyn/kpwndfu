@@ -1,4 +1,5 @@
 import hashlib, os, platform, tarfile
+import sys
 from io import StringIO
 
 class VersionConfig:
@@ -66,6 +67,9 @@ def apply_patches(binary, patches):
 
 def libusb1_path_internal():
     version = platform.mac_ver()[0]
+
+    if version == '10.15' or version == '10.16':
+        version = '10.14'
     if version == '':
         # We're not running on a Mac.
         return None
