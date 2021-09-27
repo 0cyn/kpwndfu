@@ -124,7 +124,7 @@ def prepare_shellcode(name, constants=[]):
         print('ERROR: Shellcode name "%s" does not end with known architecture. Exiting.' % name)
         sys.exit(1)
 
-    with open(get_shellcode_file_path(f'%s.bin'), 'rb') as f:
+    with open(get_shellcode_file_path(f'{name}.bin'), 'rb') as f:
         shellcode = f.read()
 
     # Shellcode has placeholder values for constants; check they match and replace with constants from config
