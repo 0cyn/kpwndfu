@@ -13,6 +13,7 @@ setup(name='checkm8',
       },
       package_data={
           'checkm8': ['devices/*', 'bin/*'],
+          'libusbfinder': ['bottles/*']
       },
       scripts=['bin/checkm8']
       )
