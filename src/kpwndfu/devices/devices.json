@@ -26,7 +26,7 @@
       "heap_write_hash": "0x10000D4EC",
       "heap_verify": "0x10000DB98",
       "nand_boot_jump": "0x10000188C",
-      "event_signal": "0x1000098B4",
+      "event_signal": "0x1000098B4"
     },
     "mem": {
       "heap_state": "0x1800086A0",
