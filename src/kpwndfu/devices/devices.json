@@ -1,0 +1,38 @@
+{
+  "8015": {
+    "meta": {
+      "rom_sha1": "96fccb1a63de1a2d50ff14555d3898a5af46e9b1",
+      "cprv": "0x11",
+      "scep": "0x01",
+      "arch": "arm64",
+      "vers": "iBoot-3332.0.0.1.23",
+      "nonce_length": 32,
+      "sep_nonce_length": 20
+    },
+    "registers": {
+      "demotion": "0x2352BC000"
+    },
+    "memmap": {
+      "heap_base": "0x1801E8000",
+      "heap_write_offset": "0x5000",
+      "rom_base": "0x100000000",
+      "rom_size": "0x100000",
+      "sram_base": "0x180000000",
+      "sram_size": "0x200000",
+      "dram_base": "0x800000000",
+      "boot_trampoline": "0x180018000"
+    },
+    "functions": {
+      "heap_write_hash": "0x10000D4EC",
+      "heap_verify": "0x10000DB98",
+      "nand_boot_jump": "0x10000188C",
+      "event_signal": "0x1000098B4",
+    },
+    "mem": {
+      "heap_state": "0x1800086A0",
+      "bootstrap_task_lr": "0x180015F88",
+      "dfu_done": "0x1800085B0",
+      "dfu_event": "0x1800085E0"
+    }
+  }
+}
